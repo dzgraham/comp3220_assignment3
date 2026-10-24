@@ -1,9 +1,16 @@
 import chess
 
+"""
+    Negamax is a variant of the minimax algorithm used in two-player, zero-sum games.
+    It simplifies implementation by relying on the mathematical property that maximizing
+        a player's score is equivalent to minimizing the negated score of the opponent:
+        max(a, b) = -min(-a, -b)
+    https://chessprogramming.org/Negamax
+"""
 
 class SearchEngine:
     """
-        Minimax search optimized with alpha-beta pruning
+        Minimax (Negamax) search optimized with alpha-beta pruning
 
         Agent strategy comes from eval_fn passed to search()
         The engine explores the game tree, scores leaves using eval_fn and returns the best move
