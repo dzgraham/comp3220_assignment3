@@ -1,14 +1,16 @@
 # comp3220_assignment3
-    Alexia Barrow - 
+    Alexia Barrows - 
     Daniel Graham - 620171166
 
-#This is the documentation for Assignment 3: "Implementing a Chess-Playing Agent Using Minimax and Alpha-Beta 
-Pruning"
+    This is the documentation for Assignment 3: "Implementing a Chess-Playing Agent Using Minimax and Alpha-Beta Pruning"
 
-Modules:
-    Engine (engine.py) - 
-    Agents (agents.py) - 
-    GUI (gui.py) - 
+## Modules:
+### Engine (engine.py) -
+    
+### Agents (agents.py) - 
+    
+### GUI (gui.py) - 
+    
 
 State clearly in your README which partner built which agent/strategy, and briefly how the two 
 strategies differ. 
