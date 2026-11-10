@@ -1,5 +1,5 @@
 # comp3220_assignment3
-    Alexia Barrows - 
+    Alexia Barrows - 620161540
     Daniel Graham - 620171166
 
     This is the documentation for Assignment 3: "Implementing a Chess-Playing Agent Using Minimax and Alpha-Beta Pruning"

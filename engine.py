@@ -42,7 +42,8 @@ class SearchEngine:
         for move in self.ordered_moves(board):
             board.push(move) #descend to the child position (makes move)
             # negate the child's return - swap and negate the window
-            value = -self.minimax(board, self.depth - 1, -beta, -alpha, eval_fn)
+            # original: value = -self.minimax(board, self.depth - 1, -beta, -alpha, eval_fn)
+            value = -self.minimax(board, self.depth - 1, -beta, -alpha, eval_fn, ply=1)            
             board.pop() # restore board before next move
 
             if value > best_value:
@@ -52,16 +53,20 @@ class SearchEngine:
 
         return best_move
 
-    def minimax(self, board, depth, alpha, beta, eval_fn):
+    def minimax(self, board, depth, alpha, beta, eval_fn, ply=0): #added ply=0
         self.nodes_visited += 1
+        
+        #treat any repeat inside the search as a draw to avoid shuffling
+        if ply > 0 and board.is_repetition(2):
+            return 0
 
         if depth == 0 or board.is_game_over():
-            return self.evaluate(board, eval_fn)
+            return self.evaluate(board, eval_fn, ply)  # added ply
 
         value = -float("inf")
         for move in self.ordered_moves(board):
             board.push(move)
-            value = max(value, -self.minimax(board, depth - 1, -beta, -alpha, eval_fn))
+            value = max(value, -self.minimax(board, depth - 1, -beta, -alpha, eval_fn, ply+1)) #added ply+1
             board.pop()
             alpha = max(alpha, value)
             if alpha >= beta:
@@ -69,7 +74,7 @@ class SearchEngine:
         return value
 
 
-    def evaluate(self, board: chess.Board, eval_fn) -> float:
+    def evaluate(self, board: chess.Board, eval_fn, ply=0) -> float: #ply
         """
             uses calling agent's evaluation function (strategy) to assign a value to a leaf node
             if check-mate, assign numerically high value to indicate win or loss
@@ -77,20 +82,24 @@ class SearchEngine:
 
         # At checkmate the side to move is the loser
         # the depth is added/subtracted to prioritize the checkmate with the fewer moves
+        # if board.is_checkmate():
+        #     if board.turn == chess.WHITE:
+        #         return -100000 + self.depth   #White is mated, bad for White
+        #     else:
+        #         return 100000 - self.depth    # Black is mated, good for White
+        # # a draw is worth 0 to both sides
+        # if board.is_stalemate() or board.is_insufficient_material():
+        #     return 0
+        
         if board.is_checkmate():
-            if board.turn == chess.WHITE:
-                return -100000 + self.depth   #White is mated, bad for White
-            else:
-                return 100000 - self.depth    # Black is mated, good for White
-
-        # a draw is worth 0 to both sides
-        if board.is_stalemate() or board.is_insufficient_material():
+            return -100000 + ply
+        if board.is_game_over():
             return 0
 
         #if game continues, evaluate and return leaf node value to be compared with others
         score = eval_fn(board)
         return score if board.turn == chess.WHITE else -score
-
+        
 
     @staticmethod
     def ordered_moves(board: chess.Board):

@@ -197,6 +197,11 @@ class ChessGUI:
         # if the human plays Black in Human vs Agent, flip so their pieces are at bottom
         flipped = (self.human_side.get() == "Black") and (self.mode.get() == "Human vs Agent")
         ss, off = self.square_size, self.offset
+        
+        # legal squares for selected piece
+        targets = set()
+        if self.selected_square is not None:
+            targets = {move.to_square for move in self.board.legal_moves if move.from_square == self.selected_square}
 
         for r in range(8):
             for c in range(8):
@@ -215,6 +220,20 @@ class ChessGUI:
                         x1, y1, x1 + ss, y1 + ss,
                         outline=HIGHLIGHT, width=4,
                     )
+                    
+                if sq in targets:
+                    if self.board.piece_at(sq) or self.board.is_en_passant(chess.Move(self.selected_square, sq)):
+                        self.canvas.create_rectangle(
+                            x1 + 2, y1 + 2, x1 + ss - 2, y1 + ss - 2,
+                            outline="#3477f4", width=3
+                        )
+                    else:
+                        rad = ss * 0.15
+                        self.canvas.create_oval(
+                            x1 + ss/2 - rad, y1 + ss/2 - rad,
+                            x1 + ss/2 + rad, y1 + ss/2 + rad,
+                            fill = "#3477f4", outline=""
+                        )
 
                 # Draw the piece glyph
                 piece = self.board.piece_at(sq)
@@ -426,6 +445,19 @@ class ChessGUI:
                 apply_agent_move can discard stale moves safely
         """
         self.agent_thinking = True
+            
+        # Error: 
+        # The Spinbox lets you type, so if it's empty or holds text, 
+        # self.depth_var.get() raises TclError. That line runs after self.agent_thinking = True 
+        # has been set, so no thread starts and the flag never resets. Clicks are then ignored 
+        # for the rest of the game, and in Agent vs Agent the game just stops.
+        # Try excepting to correct this
+        # try:
+        #     depth = max(1, min(5, int(self.depth_var.get())))
+        # except :
+        #     depth = 3
+        # agent.engine.depth = depth
+        # self.agent_thinking = True
         agent.engine.depth = self.depth_var.get()   # GUI can override engine depth
 
         snapshot_fen = self.board.fen()

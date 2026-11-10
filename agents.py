@@ -17,6 +17,8 @@ PIECE_VALUES = {
     chess.KING: 0,
 }  # according to https://www.chess.com/terms/chess-piece-value
 
+#total material value at the start of the game
+START_VALUE = 3900 * 2
 
 def evaluate_attacker(board: chess.Board) -> float:
     """
@@ -95,6 +97,61 @@ def evaluate_attacker(board: chess.Board) -> float:
 
     return score
 
+def material_at_risk(board:chess.Board, sq:chess.Square, piece:chess.Piece) -> int:
+    attackers = board.attackers(not piece.color, sq)
+    if not attackers:
+        return 0
+    
+    val = PIECE_VALUES[piece.piece_type]
+    if not board.attackers(piece.color, sq):
+        return val
+    
+    #king can't capture a defended piece, so ignore it as attacker here
+    attacker_vals = [PIECE_VALUES[board.piece_type_at(a)] for a in attackers if board.piece_type_at(a) != chess.KING] 
+    
+    if not attacker_vals:
+        return 0
+    return max(0, val - min(attacker_vals))
+
+def evaluate_materialist(board: chess.Board) -> float:
+    """
+        Material-oriented logic (greedy)
+        - Material/piece value counted at full weight
+        - Bonus if the side to move can win an undefended/underdefended piece
+        - Penalty for own pieces left where they can be taken
+        - When ahead, bonus for trading down (fewer pieces left = easier win)
+        - Ignores piece placement and pawn structure
+        Returns score from WHITE's perspective.
+    """
+    white_mat = 0
+    black_mat = 0
+    white_risk = 0
+    black_risk = 0
+    
+    for sq, piece in board.piece_map().items():
+        if piece.piece_type == chess.KING:
+            continue
+        val = PIECE_VALUES[piece.piece_type]
+        risk = material_at_risk(board, sq, piece)
+        if piece.color == chess.WHITE:
+            white_mat += val
+            white_risk = max(white_risk, risk)
+        else:
+            black_mat += val
+            black_risk = max(black_risk,risk)
+    diff = white_mat - black_mat
+    score = diff
+    
+    total = white_mat + black_mat
+    score += diff * 0.2 * (1 - total/ START_VALUE)
+    
+    if board.turn == chess.WHITE:
+        score += 0.8 * black_risk -  0.3 * white_risk
+    else: 
+        score -= 0.8 * white_risk - 0.3 * black_risk
+    
+    return score
+
 
 class AttackerAgent:
     name = "Attacker"
@@ -108,3 +165,13 @@ class AttackerAgent:
         return self.engine.search(board, self.eval_fn)
         # board state and evaluator function passed to search engine
         # to determine next move using minimax
+
+class MaterialistAgent:
+    name = "Materialist"
+    
+    def __init__(self, depth=3):
+        self.engine = SearchEngine(depth)
+        self.eval_fn = evaluate_materialist
+    
+    def choose_move(self, board: chess.Board):
+        return self.engine.search(board, self.eval_fn)
