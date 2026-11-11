@@ -1,8 +1,7 @@
-# comp3220_assignment3
+# Implementing a Chess-Playing Agent Using Minimax and Alpha-Beta Pruning
+## COMP3220 Assignment 3
     Alexia Barrows - 620161540
     Daniel Graham - 620171166
-
-    This is the documentation for Assignment 3: "Implementing a Chess-Playing Agent Using Minimax and Alpha-Beta Pruning"
 
 ## Agents - agents.py
 ### Alexia Barrows (620161540) - The Materialist
