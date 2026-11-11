@@ -18,6 +18,9 @@
         -	Moves that result in a check earns a bonus.
 
 ## Instructions
+    First, ensure that the python chess library is installed in the environment.
+        pip install -r requirements.txt
+
     To run the graphical chess application, run the command 'python main.py'
     Within the application, there are controls to change the mode ('Human vs Agent' or 'Agent vs Agent').
     The user may switch between playing as White or Black. They may also switch between playing against the Materialist or the Attacker agent.
